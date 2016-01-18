@@ -2,6 +2,7 @@
 title Android HWUI : Sync Between UI And Render Thread
 'author Ali.Xulun
 'version 1.0.0
+'Android Version 6.0
 
 participant View #Lime
 
