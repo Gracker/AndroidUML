@@ -1,0 +1,107 @@
+@startuml
+title Android HWUI : Sync Between UI And Render Thread
+'author Ali.Xulun
+'version 1.0.0
+
+participant View #Lime
+
+participant ThreadedRenderer #Lime
+
+participant RenderProxy #Cyan
+
+participant RenderThread #Cyan
+
+participant Looper #Cyan
+
+participant DrawFrameTask #Silver
+
+participant CanvasContext #Silver
+
+participant DeferredLayerUpdater #Silver
+
+participant GLConsumer #Silver
+
+
+autonumber
+
+View -> View: performTraversals()
+activate View #FFBBBB
+View -> View: performDraw()
+
+RenderThread -> RenderThread: threadLoop()
+activate RenderThread #FFBBBB
+
+activate View #FFBBBB
+View -> View: draw()
+
+RenderThread -> Looper: pollOnce()
+activate Looper #FFBBBB
+
+activate View #FFBBBB
+View -> ThreadedRenderer: draw()
+deactivate View
+deactivate View
+deactivate View
+
+activate ThreadedRenderer #FFBBBB
+ThreadedRenderer -> ThreadedRenderer : nSyncandDrawFrame()
+activate ThreadedRenderer #FFBBBB
+ThreadedRenderer -> RenderProxy : syncAndDrawFrame()
+deactivate ThreadedRenderer
+deactivate ThreadedRenderer
+
+activate RenderProxy #FFBBBB
+RenderProxy -> DrawFrameTask : drawFrame()
+deactivate RenderProxy
+
+activate DrawFrameTask #FFBBBB
+DrawFrameTask -> DrawFrameTask : postAndWait()
+activate DrawFrameTask #FFBBBB
+DrawFrameTask -> RenderThread : queue()
+deactivate DrawFrameTask
+deactivate DrawFrameTask
+
+activate RenderThread #FFBBBB
+RenderThread -> Looper : wake()
+activate Looper #FFBBBB
+deactivate Looper
+Looper --> RenderThread
+deactivate Looper
+deactivate RenderThread
+
+
+RenderThread -> DrawFrameTask:run()
+deactivate RenderThread
+
+activate DrawFrameTask #FFBBBB
+DrawFrameTask -> DrawFrameTask : syncFrameState()
+activate DrawFrameTask #FFBBBB
+DrawFrameTask -> CanvasContext : processLayerUpdate()
+deactivate DrawFrameTask
+
+activate CanvasContext #FFBBBB
+CanvasContext -> DeferredLayerUpdater : apply()
+deactivate CanvasContext
+
+activate DeferredLayerUpdater #FFBBBB
+DeferredLayerUpdater -> GLConsumer : attachToContext()
+
+activate GLConsumer #FFBBBB
+deactivate GLConsumer
+
+DeferredLayerUpdater ->DeferredLayerUpdater: doUpdateTexImage()
+activate DeferredLayerUpdate #FFBBBB
+DeferredLayerUpdater -> GLConsumer : updateTexImage()
+activate GLConsumer #FFBBBB
+deactivate GLConsumer
+DeferredLayerUpdater -> GLConsumer : getTransformMatrix()
+activate GLConsumer #FFBBBB
+deactivate GLConsumer
+deactivate DeferredLayerUpdater
+
+deactivate DeferredLayerUpdater
+DrawFrameTask -> CanvasContext : draw()
+deactivate DrawFrameTask
+activate CanvasContext #FFBBBB
+deactivate CanvasContext
+@enduml
